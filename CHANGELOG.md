@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] — 2026-04-23
+
+### Added
+
+- **`main(argv: list[str] | None = None) -> int` in-process entry point**
+  (afi agent-first CLI contract item 1). Culture's `_passthrough.py`
+  helper can now call `from agent_experience.cli import main` and invoke
+  agex in-process without `sys.exit`. Returns int for every normal path;
+  `SystemExit` reserved for `--help` / `--version` per Click convention.
+  `_main_entrypoint` (the `agex` console script) delegates to `main()`.
+- **`--json` flag on `explain`, `overview`, and `learn`** (afi contract
+  item 3). Wraps the markdown output in a JSON envelope on stdout:
+  `{agex_version, command, content, format, exit_code, …}`. Errors emit
+  a `{code, message, remediation}` object on stderr. Default (no flag)
+  behaviour unchanged — raw markdown to stdout, plain error to stderr.
+- **`agex explain` (no args) returns the root page** (afi contract
+  item 2). `explain` now accepts an optional path list (`[path...]`);
+  empty path = root (`agex explain agex`). The current flat-topic form
+  (`agex explain overview`) keeps working.
+
+### Changed
+
+- **Exit codes aligned to the afi agent-first contract:**
+  `0` = success, `1` = user error, `2` = env/setup or usage error.
+  Previously all errors used exit code 2. Affected commands: `explain`,
+  `overview`, `learn`, and the unknown-command router. `gamify` and
+  `hook` (not in afi scope) retain their existing exit codes.
+- Typer callback renamed from `main` to `_app_callback` (internal) to
+  free the `main` name for the new in-process entry point.
+
 ## [0.13.1] — 2026-04-21
 
 ### Fixed

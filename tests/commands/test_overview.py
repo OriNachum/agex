@@ -1,3 +1,4 @@
+import json
 import shutil
 from pathlib import Path
 
@@ -47,9 +48,44 @@ def test_overview_missing_agent_flag_errors(tmp_path, monkeypatch):
     assert "agent" in (result.stderr + result.stdout).lower()
 
 
-def test_overview_invalid_agent_errors(tmp_path, monkeypatch):
+def test_overview_invalid_agent_exits_1(tmp_path, monkeypatch):
+    """Invalid backend → exit 1 (user error per afi contract)."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
     result = runner.invoke(app, ["overview", "--agent", "gemini"])
-    assert result.exit_code == 2
+    assert result.exit_code == 1
     assert "gemini" in result.stderr
+
+
+# ---------------------------------------------------------------------------
+# --json — afi contract item 3
+# ---------------------------------------------------------------------------
+
+
+def test_overview_json_envelope(tmp_path, monkeypatch):
+    """``agex overview --json --agent claude-code`` wraps in JSON."""
+    project = _copy_fixture("typical", tmp_path)
+    monkeypatch.chdir(project)
+    runner = CliRunner()
+    result = runner.invoke(app, ["overview", "--json", "--agent", "claude-code"])
+    assert result.exit_code == 0
+    envelope = json.loads(result.stdout)
+    assert envelope["command"] == "overview"
+    assert envelope["agent"] == "claude-code"
+    assert envelope["format"] == "markdown"
+    assert envelope["exit_code"] == 0
+    assert "agex_version" in envelope
+    assert len(envelope["content"]) > 0
+    assert "# Overview" in envelope["content"]
+
+
+def test_overview_json_invalid_agent(tmp_path, monkeypatch):
+    """Invalid backend with --json emits structured error on stderr."""
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(app, ["overview", "--json", "--agent", "gemini"])
+    assert result.exit_code == 1
+    error_obj = json.loads(result.stderr)
+    assert error_obj["code"] == 1
+    assert "gemini" in error_obj["message"]
+    assert "remediation" in error_obj

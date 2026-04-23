@@ -17,11 +17,12 @@ Read the spec before any non-trivial change — the design invariants below are 
 ## Design invariants (non-negotiable)
 
 1. **Zero LLM calls inside agex.** All output is deterministic markdown from Jinja templates + Python.
-2. **Markdown is the only output format.** No `--json` flag.
+2. **Markdown is the default output format.** `--json` wraps the markdown in a JSON envelope (`{agex_version, command, content, format, exit_code, …}`); the content itself is still markdown. Without `--json`, raw markdown is emitted (pre-0.14 behaviour). The JSON envelope is required by the afi agent-first CLI contract.
 3. **`--agent <backend>` is required** on backend-sensitive commands. The CLI never auto-detects.
 4. **Side effects only in** `gamify`, `gamify --uninstall`, `hook write`, and first-run `.agex/` init. Everything else is read-only.
 5. **"Unsupported" is success** — exit 0 with a markdown notice that links to the issue tracker, not a non-zero exit.
 6. **Skills are authored by the agent, not shipped by agex.** `agex learn <topic>` teaches; `agex explain <topic>` describes; agex never writes a user skill file on the agent's behalf in v0.1.
+7. **In-process entry point: `main(argv) -> int`.** Culture's `_passthrough.py` calls `from agent_experience.cli import main` — never `sys.exit` on normal paths. Exit codes: 0 = success, 1 = user error, 2 = env/setup error.
 
 ## Architecture (3-stage pipeline)
 

@@ -13,7 +13,7 @@
 | `agex gamify --uninstall --agent X` | Reverse `gamify`. |
 | `agex hook write <event> [...]` | Append a tracking event. Called by installed hooks. |
 | `agex hook read --agent X` | Show tracked events as markdown + source path. |
-| `agex explain <topic>` | You're reading this. |
+| `agex explain [topic]` | You're reading this. Omit topic for root page. |
 
 ## First steps
 
@@ -26,7 +26,7 @@ agex overview --agent claude-code  # what's in this project?
 ## Design invariants
 
 - **Non-agentic.** Zero LLM calls inside agex. All output is deterministic.
-- **Markdown is the universal format.** No `--json` flag.
+- **Markdown is the default format.** `--json` wraps the markdown in a JSON envelope for agent consumption.
 - **`--agent` is required** on backend-sensitive commands.
 - **Unsupported is success.** If your backend lacks a feature, you get a markdown notice + link to file an issue — exit code 0.
 

@@ -54,13 +54,13 @@ def run_topic(topic: str, backend: Backend) -> tuple[str, int, str]:
     """Return (stdout, exit_code, stderr) for a specific lesson topic."""
     if not _TOPIC_RE.match(topic):
         menu_out, _, _ = run_menu(backend)
-        return (menu_out, 2, f"agex: error: unknown topic '{topic}'")
+        return (menu_out, 1, f"agex: error: unknown topic '{topic}'")
 
     topic_dir = _learn_assets().joinpath("topics", topic)
     skill_md = topic_dir.joinpath(_SKILL_FILENAME)
     if not skill_md.is_file():
         menu_out, _, _ = run_menu(backend)
-        return (menu_out, 2, f"agex: error: unknown topic '{topic}'")
+        return (menu_out, 1, f"agex: error: unknown topic '{topic}'")
 
     skill = _load_skill_from_traversable(skill_md)
     template_path = topic_dir.joinpath("assets", "skill-template", backend.value, _SKILL_FILENAME)
